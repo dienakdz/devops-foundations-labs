@@ -1,65 +1,111 @@
 # Session 02 - Containerization Basics
 
-## Ban Chat
+Vietnamese version: [README.vi.md](README.vi.md)
 
-Docker dung de dong goi app thanh mot image. Image nay co the chay giong nhau tren may ban, may dong doi, server, hoac cloud.
+## Purpose
 
-Khong Docker:
+This session explains how to package an application into a Docker image and run that image as a container.
 
-```text
-May A co Python 3.11 -> chay duoc
-May B co Python 3.9 -> loi
-Server thieu thu vien -> loi
-```
-
-Co Docker:
+Without containers, every environment must manually provide the right runtime and dependencies:
 
 ```text
-Docker image = app + runtime + dependencies + command chay
+Machine A has Python 3.12 -> works
+Machine B has Python 3.9 -> may fail
+Server misses dependencies -> may fail
 ```
 
-## File Quan Trong
+With Docker:
 
-- `app.py`: ung dung Python nho.
-- `requirements.txt`: dependency cua app.
-- `Dockerfile`: cong thuc build image.
-- `.dockerignore`: bo qua file khong can copy vao image.
+```text
+Docker image = OS base + runtime + dependencies + app code + start command
+```
+
+## Files
+
+- `app.py`: a small FastAPI application.
+- `requirements.txt`: Python dependencies.
+- `Dockerfile`: instructions for building the image.
+- `.dockerignore`: files Docker should ignore during build.
+
+## Key Concepts
+
+```text
+Dockerfile = build recipe
+Image      = packaged application template
+Container  = running instance of an image
+```
+
+You must have an image before Docker can create a container. If the image is not local, Docker can pull it from a registry such as Docker Hub or AWS ECR.
 
 ## Lab
 
-Build image:
+Use WSL/Linux shell:
 
-```powershell
+```bash
+cd /mnt/d/DevOps/Ops/session-02-containerization-basics
 docker build -t devops-demo-api:session-02 .
 ```
 
-Run container:
+Run the container:
 
-```powershell
-docker run --rm -p 8000:8000 devops-demo-api:session-02
+```bash
+docker run --rm -p 8002:8000 devops-demo-api:session-02
 ```
 
-Kiem tra:
+Open another terminal and test:
 
-```powershell
-curl http://localhost:8000
+```bash
+curl http://localhost:8002
 ```
 
-Dung container bang `Ctrl+C`.
+Expected response:
 
-## Khi Nao Dung Docker
+```json
+{"message":"Hello from Docker","session":"02-containerization-basics"}
+```
 
-Dung khi:
+Stop the container with `Ctrl+C`.
 
-- Ban co app can chay on dinh o nhieu moi truong.
-- Ban muon deploy bang image thay vi copy source code len server.
-- Ban muon CI/CD build mot artifact ro rang.
-
-## Ket Luan
-
-Docker tra loi cau hoi:
+## Port Mapping
 
 ```text
-Lam sao dong goi app de chay giong nhau moi noi?
+-p 8002:8000
 ```
 
+means:
+
+```text
+host port 8002 -> container port 8000
+```
+
+The FastAPI app listens on port `8000` inside the container. You access it from your machine through `localhost:8002`.
+
+## Rebuild After Code Changes
+
+If you change `app.py`, rebuild the image:
+
+```bash
+docker build -t devops-demo-api:session-02 .
+```
+
+Then stop the old container and run a new container from the updated image.
+
+Using the same tag points `devops-demo-api:session-02` to the newly built image. A container that is already running does not automatically update.
+
+## Useful Commands
+
+```bash
+docker images
+docker ps
+docker ps -a
+docker logs <container-name-or-id>
+docker image prune
+```
+
+## Takeaway
+
+Docker answers this question:
+
+```text
+How do we package an app so it runs consistently across machines, servers, and cloud environments?
+```

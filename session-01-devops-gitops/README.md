@@ -1,70 +1,79 @@
 # Session 01 - DevOps Principles & GitOps
 
-## Ban Chat
+Vietnamese version: [README.vi.md](README.vi.md)
 
-Session nay khong phai hoc mot tool cu the, ma hoc cach lam viec.
+## Purpose
 
-DevOps tra loi cau hoi:
+This session is about operating principles, not a specific tool.
 
-```text
-Lam sao de tu code den production nhanh hon, it loi hon, co the rollback va kiem soat duoc?
-```
-
-GitOps tra loi cau hoi:
+DevOps answers this question:
 
 ```text
-Lam sao de moi thay doi deu di qua Git, co lich su, review, rollback?
+How do we move from code to production faster, with fewer errors, clearer ownership, and rollback capability?
 ```
 
-## Khi Nao Dung
-
-Dung GitOps khi ban muon:
-
-- Deployment config nam trong Git.
-- Thay doi production phai qua pull request.
-- Muon rollback bang cach quay lai commit cu.
-- Muon cluster/app tu dong dong bo theo file trong repo.
-
-## Flow De Nho
+GitOps answers this question:
 
 ```text
-Developer sua file
--> Commit len Git
--> Pull request/review
--> Merge
--> CI/CD hoac GitOps controller apply thay doi
--> He thong chay theo dung trang thai trong Git
+How do we make Git the source of truth for application and infrastructure changes?
 ```
 
-## Vi Du
+## Core Ideas
 
-File `app-config.yaml` trong session nay gia lap mot cau hinh deployment. Ban hay mo file do va sua:
+- DevOps is a way of working across development, operations, automation, and feedback.
+- GitOps means desired system state is declared in Git.
+- Changes should be reviewed, versioned, auditable, and reversible.
+- A deployment should be reproducible from files, not from undocumented manual clicks.
+
+## When To Use GitOps
+
+Use GitOps when you want:
+
+- Deployment configuration stored in Git.
+- Production changes reviewed through pull requests.
+- A clear history of who changed what and when.
+- Rollback by reverting to a previous commit.
+- A cluster or deployment system that syncs itself from Git.
+
+## Mental Flow
+
+```text
+Developer changes a file
+-> commit to Git
+-> open pull request
+-> review and merge
+-> CI/CD or GitOps controller applies the change
+-> the system moves toward the state declared in Git
+```
+
+## Practice
+
+Open `app-config.yaml` and change:
 
 ```yaml
 replicas: 2
 imageTag: "1.0.0"
 ```
 
-thanh:
+to:
 
 ```yaml
 replicas: 3
 imageTag: "1.0.1"
 ```
 
-Trong doi that, thay doi nhu vay se duoc commit len Git va pipeline/GitOps tool se deploy.
+In a real project, this type of change would be committed, reviewed, merged, and then applied by a pipeline or GitOps tool.
 
-## Bai Tap
+## Check Yourself
 
-1. Sua `replicas` trong `app-config.yaml`.
-2. Commit thay doi bang Git.
-3. Tu tra loi: neu deploy loi, rollback bang cach nao?
+- What is the desired state in `app-config.yaml`?
+- If a deployment fails, which Git commit would you revert to?
+- Which changes should go through pull request review?
 
-## Ket Luan
+## Takeaway
 
-GitOps khong thay Docker, Kubernetes hay Terraform. No la cach van hanh:
+GitOps does not replace Docker, Kubernetes, Terraform, or CI/CD. It is an operating model:
 
 ```text
-Git la noi khai bao trang thai mong muon cua he thong.
+Git stores the desired state of the system.
 ```
-

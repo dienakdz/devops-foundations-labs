@@ -1,10 +1,10 @@
 # Session 03 - Docker Compose Multi-Service
 
-## Ban Chat
+Vietnamese version: [README.vi.md](README.vi.md)
 
-App that thuong khong chi co mot container.
+## Purpose
 
-Vi du:
+Real applications usually need more than one container:
 
 ```text
 api
@@ -14,57 +14,56 @@ worker
 nginx
 ```
 
-Docker Compose dung de chay nhieu service cung luc tren local bang mot file `docker-compose.yml`.
+Docker Compose runs multiple related services from one `docker-compose.yml` file.
 
-Session nay co 2 service:
+This session has two services:
 
 ```text
-api   = FastAPI app
-redis = Redis server luu visit_count
+api   = FastAPI application
+redis = Redis server storing visit_count
 ```
 
 ## Lab
 
-Chay:
+Use WSL/Linux shell:
 
 ```bash
+cd /mnt/d/DevOps/Ops/session-03-docker-compose-multi-service
 docker compose up --build
 ```
 
-Kiem tra API:
+Open another terminal and test:
 
 ```bash
 curl http://localhost:8001
+curl http://localhost:8001
 ```
 
-Moi lan goi API, app se tang counter trong Redis.
+The `visit_count` value should increase on each request.
 
-Dung va xoa container:
+Stop and remove containers and the default network:
 
 ```bash
 docker compose down
 ```
 
-Dung va xoa ca volume neu co:
+Remove volumes too, if the project has volumes:
 
 ```bash
 docker compose down -v
 ```
 
-Xem trang thai service:
+## Useful Commands
 
 ```bash
 docker compose ps
-```
-
-Xem log:
-
-```bash
+docker compose ps -a
 docker compose logs api
 docker compose logs redis
+docker compose images
 ```
 
-## Giai Thich docker-compose.yml
+## Compose File Explained
 
 ```yaml
 services:
@@ -72,14 +71,14 @@ services:
     build: .
 ```
 
-Service `api` duoc build tu `Dockerfile` trong folder hien tai.
+The `api` service is built from the `Dockerfile` in the current folder.
 
 ```yaml
 ports:
   - "8001:8000"
 ```
 
-May host goi `localhost:8001`, request se di vao container `api` cong `8000`.
+Requests to `localhost:8001` on the host are forwarded to port `8000` inside the `api` container.
 
 ```yaml
 environment:
@@ -87,7 +86,7 @@ environment:
   REDIS_PORT: "6379"
 ```
 
-Truyen config vao container `api`. Trong Compose, cac service cung network co the goi nhau bang ten service. Vi vay `api` goi Redis bang hostname `redis`, khong phai `localhost`.
+Environment variables are passed into the `api` container. In a Compose network, services can reach each other by service name, so the API calls Redis using the hostname `redis`, not `localhost`.
 
 ```yaml
 depends_on:
@@ -95,7 +94,7 @@ depends_on:
     condition: service_healthy
 ```
 
-Bao Compose start `api` sau khi `redis` duoc danh dau la healthy.
+Compose starts the `api` service after the `redis` service is marked healthy.
 
 ```yaml
 healthcheck:
@@ -105,64 +104,80 @@ healthcheck:
   retries: 5
 ```
 
-Compose kiem tra Redis bang lenh `redis-cli ping`. Neu Redis san sang, no tra ve `PONG`.
+Compose checks Redis with `redis-cli ping`. When Redis is ready, it returns `PONG`.
 
-## Started Khac Ready
+## Where visit_count Is Stored
 
-Can phan biet:
+In `app.py`:
 
-```text
-container started = container da duoc khoi dong
-service ready     = ung dung ben trong container da san sang nhan request
+```python
+count = redis_client.incr("visit_count")
 ```
 
-`depends_on` co ban chi xu ly thu tu start container. Neu khong co healthcheck, co the xay ra truong hop:
+This sends a command to Redis:
+
+```text
+increase the key visit_count by 1 and return the new value
+```
+
+`count` is a temporary Python variable for the current request. `visit_count` is the actual key stored in Redis.
+
+## Started vs Ready
+
+These are different states:
+
+```text
+container started = the container process has started
+service ready     = the application inside the container can handle requests
+```
+
+Without a healthcheck, this can happen:
 
 ```text
 00:00 redis container started
 00:01 api container started
-00:02 api goi redis
-00:03 redis moi ready
+00:02 api calls redis
+00:03 redis becomes ready
 ```
 
-Luc do API co the gap loi connection.
+At `00:02`, the API may get a connection error.
 
-Voi healthcheck va `condition: service_healthy`, Compose se doi Redis ready roi moi start API.
+With a healthcheck and `condition: service_healthy`, Compose waits until Redis is ready before starting the API service.
 
-## Healthcheck Khong Thay The Retry Logic
+## Healthcheck Is Not A Replacement For Retry Logic
 
-Healthcheck tot cho local/dev Compose, nhung production van nen co retry logic trong app.
+Healthchecks are useful for local development, but production applications should still have retry logic.
 
-Ly do:
+Reasons:
 
 ```text
-Redis/database co the restart
-Network co the cham tam thoi
-Dependency co the ready cham hon app
+Redis or a database can restart
+Networking can fail temporarily
+A dependency can become ready later than the app
 ```
 
-Ung dung production tot nen biet thu lai connection thay vi chet ngay khi dependency loi trong vai giay dau.
+A production-grade app should retry temporary dependency failures instead of immediately crashing.
 
-## Khi Nao Dung Docker Compose
+## When To Use Docker Compose
 
-Dung khi:
+Use Docker Compose when:
 
-- Chay local dev.
-- Can demo nhanh nhieu service.
-- Muon dong doi chay cung mot moi truong local.
+- You need a local development environment.
+- You need several services running together.
+- You want teammates to start the same local stack with one command.
 
-Khong nen xem Compose la Kubernetes. Compose tot cho local/simple setup, Kubernetes tot cho production orchestration.
+Do not treat Compose as Kubernetes. Compose is great for local/simple setups. Kubernetes is designed for production orchestration at a larger scale.
 
-## Ket Luan
+## Takeaway
 
-Docker Compose tra loi cau hoi:
+Docker Compose answers this question:
 
 ```text
-Lam sao chay ca he thong nho o local bang mot lenh?
+How do we run a small multi-service system locally with one command?
 ```
 
-Va session nay them mot y quan trong:
+This session also adds an important operational lesson:
 
 ```text
-Container started khong co nghia la service ben trong da ready.
+A started container does not always mean the service inside it is ready.
 ```
