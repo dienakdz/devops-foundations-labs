@@ -1,0 +1,16 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8001:8000"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+

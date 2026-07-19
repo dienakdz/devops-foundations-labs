@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-demo
+  namespace: devops-config-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: config-demo
+  template:
+    metadata:
+      labels:
+        app: config-demo
+    spec:
+      containers:
+        - name: config-demo
+          image: busybox:1.36
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "APP_ENV=$APP_ENV";
+              echo "LOG_LEVEL=$LOG_LEVEL";
+              echo "data from pod start" >> /data/app.log;
+              tail -f /data/app.log
+          envFrom:
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: app-secret
+          volumeMounts:
+            - name: app-data
+              mountPath: /data
+      volumes:
+        - name: app-data
+          persistentVolumeClaim:
+            claimName: app-data
+

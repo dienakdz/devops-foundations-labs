@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: final-demo-api
+  namespace: final-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: final-demo-api
+  template:
+    metadata:
+      labels:
+        app: final-demo-api
+    spec:
+      containers:
+        - name: api
+          image: final-demo-api:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+

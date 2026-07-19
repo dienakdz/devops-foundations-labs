@@ -1,0 +1,9 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+generated-note.txt
+__pycache__/
+*.pyc
+.venv/
+.env
