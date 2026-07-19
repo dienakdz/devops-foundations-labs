@@ -1,183 +1,187 @@
 # Start Here
 
-Neu ban dang mo ho, dung co hoc theo ten tool truoc. Hay hoc theo cau hoi van hanh.
+Vietnamese version: [START_HERE.vi.md](START_HERE.vi.md)
 
-## 1. Lo Trinh De Hieu
+If you feel lost, do not start by memorizing tool names. Start from operational questions.
 
-### Cau Hoi 1: App cua minh chay bang gi?
+## 1. Learning Path By Question
 
-Hoc:
+### Question 1: How does my app run?
+
+Study:
 
 ```text
 session-02-containerization-basics
 ```
 
-Ket qua can nam:
+You should understand:
 
 ```text
-Dockerfile bien source code thanh Docker image.
-Docker image la artifact de deploy.
+A Dockerfile turns source code into a Docker image.
+A Docker image is the deployable artifact.
+A container is a running instance of an image.
 ```
 
-### Cau Hoi 2: Local can nhieu service thi chay sao?
+### Question 2: How do I run multiple local services?
 
-Hoc:
+Study:
 
 ```text
 session-03-docker-compose-multi-service
 ```
 
-Ket qua can nam:
+You should understand:
 
 ```text
-docker-compose.yml chay api + redis/database/cache bang mot lenh.
+docker-compose.yml can run an API plus Redis/database/cache with one command.
+Service names work as internal DNS names inside the Compose network.
 ```
 
-### Cau Hoi 3: Len production thi ai quan ly container?
+### Question 3: Who manages containers in production?
 
-Hoc:
+Study:
 
 ```text
 session-04-kubernetes-core-objects
 ```
 
-Ket qua can nam:
+You should understand:
 
 ```text
-Deployment quan ly Pod.
-Service tao dia chi on dinh de goi Pod.
-Ingress expose HTTP/domain.
+Deployment manages Pods.
+Service gives Pods a stable network endpoint.
+Ingress exposes HTTP/domain traffic.
 ```
 
-### Cau Hoi 4: Password, config, data de dau?
+### Question 4: Where do passwords, config, and data live?
 
-Hoc:
+Study:
 
 ```text
 session-05-k8s-config-storage
 ```
 
-Ket qua can nam:
+You should understand:
 
 ```text
-ConfigMap cho config thuong.
-Secret cho credential.
-PVC cho data can ton tai.
+ConfigMap stores non-sensitive config.
+Secret stores credentials.
+PVC stores persistent data.
 ```
 
-### Cau Hoi 5: AWS resource tao bang cach nao?
+### Question 5: How do I create AWS resources safely?
 
-Hoc:
+Study:
 
 ```text
 session-06-terraform-iac-basics
 ```
 
-Ket qua can nam:
+You should understand:
 
 ```text
-Terraform tao/sua/xoa infrastructure bang file .tf.
-terraform plan de xem truoc.
-terraform apply de tao/sua.
-terraform destroy de xoa nhung thu Terraform quan ly.
+Terraform creates, updates, and destroys infrastructure from .tf files.
+terraform plan previews changes.
+terraform apply creates or updates resources.
+terraform destroy deletes resources managed by Terraform.
 ```
 
-### Cau Hoi 6: Moi lan push code co deploy tay khong?
+### Question 6: Do I deploy manually after every push?
 
-Hoc:
+Study:
 
 ```text
 session-07-aws-devops-pipeline
 ```
 
-Ket qua can nam:
+You should understand:
 
 ```text
-Pipeline tu dong test, build image, push len ECR, deploy.
+A pipeline can test code, build a Docker image, push it to ECR, and deploy it.
 ```
 
-### Cau Hoi 7: Tat ca ghep lai ra sao?
+### Question 7: How do all pieces fit together?
 
-Hoc:
+Study:
 
 ```text
 session-08-final-project
 ```
 
-Ket qua can nam:
+You should understand:
 
 ```text
-Source -> Docker image -> ECR -> Kubernetes/ECS/EKS -> Pipeline.
-Infrastructure AWS -> Terraform.
+Source -> Docker image -> ECR -> Kubernetes/ECS/EKS -> pipeline
+AWS infrastructure -> Terraform
 ```
 
-## 2. Thu Tu Hoc De Khong Bi Roi
+## 2. Recommended Order
 
-Hoc theo thu tu nay:
+Use this order:
 
 ```text
-1. README.md tong quan
+1. README.md overview
 2. START_HERE.md
 3. session-02
 4. session-03
-5. session-04
-6. session-05
-7. session-06 local-no-cost
+5. session-06 local-no-cost
+6. session-04
+7. session-05
 8. session-06 aws-s3-demo
 9. session-07
 10. session-08
-11. Quay lai session-01 de hieu GitOps sau khi da thay cac tool
+11. revisit session-01 to understand GitOps after seeing the tools
 ```
 
-Ly do de session-01 doc lai sau: GitOps la tu duy van hanh. Khi chua thay Docker/K8s/Terraform thi nghe rat tru tuong.
+Why revisit session 01 later: GitOps is an operating model. It is easier to understand after you have seen Docker, Compose, Kubernetes, Terraform, and CI/CD in action.
 
-Neu hoc bang WSL, doc them:
+If you use WSL, also read:
 
 ```text
 WSL_SETUP.md
 ```
 
-## 3. Cau Than Chu De Nho
+## 3. Memory Hook
 
 ```text
-Docker dong goi app.
-Compose chay nhieu service local.
-Kubernetes van hanh container.
-ConfigMap/Secret/PVC dua config va data vao app.
-Terraform tao ha tang cloud.
-Pipeline tu dong hoa build/deploy.
-GitOps bat moi thay doi di qua Git.
+Docker packages the app.
+Compose runs multiple local services.
+Kubernetes operates containers on a cluster.
+ConfigMap/Secret/PVC provide config and data to apps.
+Terraform creates cloud infrastructure.
+Pipeline automates build and deployment.
+GitOps keeps desired state in Git.
 ```
 
-## 4. Quy Trinh AWS An Toan
+## 4. Safe AWS Workflow
 
-Truoc khi tao resource AWS:
+Before creating AWS resources:
 
-```powershell
+```bash
 aws sts get-caller-identity
 ```
 
-Kiem tra account co dung khong.
+Confirm the account is correct.
 
-Truoc khi tao:
+Before creating or changing resources:
 
-```powershell
+```bash
 terraform plan
 ```
 
-Chi khi doc plan va hieu no tao gi moi chay:
+Only apply when you understand what the plan will create or change:
 
-```powershell
+```bash
 terraform apply
 ```
 
-Sau lab:
+After the lab:
 
-```powershell
+```bash
 terraform destroy
 ```
 
-Sau destroy, vao AWS Console kiem tra lai:
+After destroy, check AWS Console for leftovers:
 
 ```text
 EC2
@@ -192,15 +196,15 @@ S3
 CloudWatch Logs
 ```
 
-## 5. Checklist Thanh Thuc
+## 5. Skill Checklist
 
-Ban tam coi la nam duoc nen tang DevOps khi co the tu lam:
+You can consider the foundation solid when you can:
 
-- Viet Dockerfile cho mot app don gian.
-- Chay app + database/cache bang Docker Compose.
-- Viet Deployment + Service Kubernetes.
-- Truyen config bang ConfigMap va Secret.
-- Tao mot AWS resource nho bang Terraform.
-- Destroy dung resource do bang Terraform.
-- Giai thich duoc pipeline build image va push len ECR.
-- Biet resource nao tao bang UI thi Terraform khong tu xoa duoc.
+- Write a Dockerfile for a small app.
+- Run app plus database/cache with Docker Compose.
+- Write a Kubernetes Deployment and Service.
+- Pass config through ConfigMap and Secret.
+- Create a small AWS resource with Terraform.
+- Destroy that resource with Terraform.
+- Explain how a pipeline builds an image and pushes it to ECR.
+- Explain why Terraform cannot automatically delete resources created manually in AWS Console.
