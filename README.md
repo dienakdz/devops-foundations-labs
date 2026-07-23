@@ -50,7 +50,7 @@ README.md     English guide
 README.vi.md  Vietnamese guide, when translated
 ```
 
-Sessions 1, 2, 3, and 4 currently have bilingual README files.
+Sessions 1, 2, 3, 4, and 5 currently have bilingual README files.
 
 ## Recommended Learning Order
 

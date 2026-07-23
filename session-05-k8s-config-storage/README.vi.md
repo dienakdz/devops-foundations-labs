@@ -1,48 +1,48 @@
 # Session 05 - Kubernetes Config & Storage
 
-Vietnamese version: [README.vi.md](README.vi.md)
+English version: [README.md](README.md)
 
-## Purpose
+## Mục Tiêu
 
-Session 04 showed how to run an application on Kubernetes with a Deployment and Service.
+Session 04 đã chỉ cách chạy ứng dụng trên Kubernetes bằng Deployment và Service.
 
-Session 05 answers the next operational question:
-
-```text
-The app is running, but where should config, credentials, and persistent data live?
-```
-
-This session introduces:
+Session 05 trả lời câu hỏi vận hành tiếp theo:
 
 ```text
-ConfigMap = non-sensitive runtime configuration
-Secret    = sensitive runtime configuration
-PVC       = a request for persistent storage
-Volume    = how storage is mounted into a container
+App đã chạy rồi, vậy config, credential, và data bền vững nên nằm ở đâu?
 ```
 
-## Why This Matters
-
-Do not bake environment-specific config into a Docker image.
-
-Instead:
+Session này giới thiệu:
 
 ```text
-same image
-+ different ConfigMap/Secret/PVC per environment
-= same app can run in dev, staging, and production
+ConfigMap = runtime config không nhạy cảm
+Secret    = runtime config nhạy cảm
+PVC       = yêu cầu storage bền vững từ cluster
+Volume    = cách mount storage vào container
 ```
 
-Example:
+## Vì Sao Quan Trọng?
+
+Không nên đóng cứng config theo môi trường vào Docker image.
+
+Thay vào đó:
 
 ```text
-Docker image contains: app code and runtime
-ConfigMap contains: APP_ENV, LOG_LEVEL
-Secret contains: API_TOKEN, DATABASE_PASSWORD
-PVC contains: app files, uploads, or database data
+cùng một image
++ ConfigMap/Secret/PVC khác nhau theo từng môi trường
+= cùng app có thể chạy ở dev, staging, production
 ```
 
-## Big Picture
+Ví dụ:
+
+```text
+Docker image chứa: app code và runtime
+ConfigMap chứa: APP_ENV, LOG_LEVEL
+Secret chứa: API_TOKEN, DATABASE_PASSWORD
+PVC chứa: file app, upload, hoặc database data
+```
+
+## Sơ Đồ Dễ Hiểu
 
 ```text
 Namespace: devops-config-demo
@@ -56,25 +56,25 @@ Namespace: devops-config-demo
 └── Deployment: config-demo
     └── Pod
         └── Container: busybox
-            ├── env from ConfigMap
-            ├── env from Secret
-            └── /data mounted from PVC
+            ├── env từ ConfigMap
+            ├── env từ Secret
+            └── /data mount từ PVC
 ```
 
-Data flow:
+Luồng dữ liệu:
 
 ```text
 ConfigMap/Secret
 -> envFrom
--> environment variables inside the container
+-> environment variables trong container
 
 PVC
 -> volumes
 -> volumeMounts
--> /data directory inside the container
+-> thư mục /data trong container
 ```
 
-GitHub also renders this Mermaid diagram:
+GitHub cũng render được Mermaid diagram này:
 
 ```mermaid
 flowchart TD
@@ -101,19 +101,19 @@ flowchart TD
     C --> LOG
 ```
 
-## Core Objects
+## Các Object Cốt Lõi
 
-| Object | Used For | Example In This Session |
+| Object | Dùng Để | Ví Dụ Trong Session Này |
 | --- | --- | --- |
-| Namespace | Group resources in the cluster | `devops-config-demo` |
-| ConfigMap | Store non-sensitive config | `APP_ENV`, `LOG_LEVEL` |
-| Secret | Store sensitive config | `API_TOKEN` |
-| PersistentVolumeClaim | Request persistent storage | `app-data`, `1Gi` |
-| Volume | Attach storage to a Pod | `volumes[].persistentVolumeClaim` |
-| volumeMount | Mount a Volume into a container path | `/data` |
-| envFrom | Load all keys from ConfigMap/Secret as env vars | `app-config`, `app-secret` |
+| Namespace | Gom resource trong cluster | `devops-config-demo` |
+| ConfigMap | Lưu config không nhạy cảm | `APP_ENV`, `LOG_LEVEL` |
+| Secret | Lưu config nhạy cảm | `API_TOKEN` |
+| PersistentVolumeClaim | Xin storage bền vững | `app-data`, `1Gi` |
+| Volume | Gắn storage vào Pod | `volumes[].persistentVolumeClaim` |
+| volumeMount | Mount Volume vào path trong container | `/data` |
+| envFrom | Load toàn bộ key từ ConfigMap/Secret thành env vars | `app-config`, `app-secret` |
 
-## Files
+## Các File
 
 ```text
 namespace.yaml
@@ -125,7 +125,7 @@ deployment-with-config-storage.yaml
 
 ### namespace.yaml
 
-Creates a namespace for this lab:
+Tạo namespace cho lab:
 
 ```yaml
 apiVersion: v1
@@ -136,7 +136,7 @@ metadata:
 
 ### configmap.yaml
 
-Stores non-sensitive config:
+Lưu config không nhạy cảm:
 
 ```yaml
 apiVersion: v1
@@ -149,20 +149,20 @@ data:
   LOG_LEVEL: "info"
 ```
 
-Use ConfigMap for values like:
+Dùng ConfigMap cho các giá trị như:
 
 ```text
 APP_ENV
 LOG_LEVEL
 feature flags
-non-sensitive service URLs
+service URLs không nhạy cảm
 ```
 
-Do not put passwords, tokens, or private keys in ConfigMap.
+Không để password, token, private key trong ConfigMap.
 
 ### secret.yaml
 
-Stores sensitive config:
+Lưu config nhạy cảm:
 
 ```yaml
 apiVersion: v1
@@ -175,7 +175,7 @@ stringData:
   API_TOKEN: "replace-me-for-real-projects"
 ```
 
-Use Secret for values like:
+Dùng Secret cho các giá trị như:
 
 ```text
 DATABASE_PASSWORD
@@ -184,11 +184,11 @@ PRIVATE_KEY
 JWT_SECRET
 ```
 
-Important: Kubernetes Secrets are not automatically a complete production secret-management solution. In production, consider AWS Secrets Manager, External Secrets Operator, Sealed Secrets, SOPS, and encryption at rest.
+Quan trọng: Kubernetes Secret không tự động là giải pháp secret-management hoàn chỉnh cho production. Trong production, nên cân nhắc AWS Secrets Manager, External Secrets Operator, Sealed Secrets, SOPS, và encryption at rest.
 
 ### pvc.yaml
 
-Requests persistent storage from the cluster:
+Xin storage bền vững từ cluster:
 
 ```yaml
 apiVersion: v1
@@ -204,19 +204,19 @@ spec:
       storage: 1Gi
 ```
 
-This means:
+Nghĩa là:
 
 ```text
-The app asks the cluster for 1Gi of persistent storage.
+App xin cluster cấp 1Gi storage bền vững.
 ```
 
-`ReadWriteOnce` means the volume can be mounted as read-write by one node at a time.
+`ReadWriteOnce` nghĩa là volume có thể được mount read/write bởi một node tại một thời điểm.
 
 ### deployment-with-config-storage.yaml
 
-This Deployment consumes the ConfigMap, Secret, and PVC.
+Deployment này dùng ConfigMap, Secret, và PVC.
 
-Load all ConfigMap and Secret keys as environment variables:
+Load toàn bộ key từ ConfigMap và Secret thành environment variables:
 
 ```yaml
 envFrom:
@@ -226,7 +226,7 @@ envFrom:
       name: app-secret
 ```
 
-Mount the PVC into the container:
+Mount PVC vào container:
 
 ```yaml
 volumeMounts:
@@ -234,7 +234,7 @@ volumeMounts:
     mountPath: /data
 ```
 
-Connect the Volume to the PVC:
+Nối Volume với PVC:
 
 ```yaml
 volumes:
@@ -243,7 +243,7 @@ volumes:
       claimName: app-data
 ```
 
-The container command:
+Command của container:
 
 ```yaml
 args:
@@ -254,21 +254,21 @@ args:
     tail -f /data/app.log
 ```
 
-It prints config values, writes a line into `/data/app.log`, and keeps the container running with `tail -f`.
+Nó in config values, ghi một dòng vào `/data/app.log`, rồi dùng `tail -f` để container tiếp tục chạy.
 
-## Prerequisites
+## Điều Kiện Cần Có
 
-You need a working Kubernetes cluster from Session 04.
+Bạn cần Kubernetes cluster đã chạy từ Session 04.
 
-Check:
+Kiểm tra:
 
 ```bash
 kubectl get nodes
 ```
 
-If no cluster exists, go back to Session 04 and create a local cluster with kind or Docker Desktop Kubernetes.
+Nếu chưa có cluster, quay lại Session 04 và tạo local cluster bằng kind hoặc Docker Desktop Kubernetes.
 
-## Step 1 - Apply The Namespace
+## Bước 1 - Apply Namespace
 
 ```bash
 cd /mnt/d/DevOps/Ops/session-05-k8s-config-storage
@@ -276,16 +276,16 @@ kubectl apply -f namespace.yaml
 kubectl get namespaces
 ```
 
-If you are not using WSL, replace the `cd /mnt/d/...` path with your local clone path.
+Nếu không dùng WSL, thay path `cd /mnt/d/...` bằng path nơi bạn clone repo.
 
-## Step 2 - Apply ConfigMap And Secret
+## Bước 2 - Apply ConfigMap Và Secret
 
 ```bash
 kubectl apply -f configmap.yaml
 kubectl apply -f secret.yaml
 ```
 
-Inspect them:
+Kiểm tra:
 
 ```bash
 kubectl get configmap,secret -n devops-config-demo
@@ -293,70 +293,70 @@ kubectl describe configmap app-config -n devops-config-demo
 kubectl describe secret app-secret -n devops-config-demo
 ```
 
-Do not use `kubectl describe secret` in shared screenshots if real secrets are present.
+Không dùng `kubectl describe secret` trong screenshot chia sẻ nếu secret là giá trị thật.
 
-## Step 3 - Apply The PVC
+## Bước 3 - Apply PVC
 
 ```bash
 kubectl apply -f pvc.yaml
 ```
 
-Inspect the claim:
+Kiểm tra claim:
 
 ```bash
 kubectl get pvc -n devops-config-demo
 kubectl describe pvc app-data -n devops-config-demo
 ```
 
-Expected idea:
+Kết quả mong đợi:
 
 ```text
-The PVC should become Bound.
+PVC chuyển sang Bound.
 ```
 
-If it stays Pending, your cluster may not have a default StorageClass.
+Nếu PVC bị Pending, cluster có thể chưa có default StorageClass.
 
-Check:
+Kiểm tra:
 
 ```bash
 kubectl get storageclass
 ```
 
-## Step 4 - Apply The Deployment
+## Bước 4 - Apply Deployment
 
 ```bash
 kubectl apply -f deployment-with-config-storage.yaml
 ```
 
-Inspect the Pod:
+Kiểm tra Pod:
 
 ```bash
 kubectl get pods -n devops-config-demo
 kubectl get all -n devops-config-demo
 ```
 
-## Step 5 - Verify Environment Variables
+## Bước 5 - Verify Environment Variables
 
-Check container logs:
+Xem container logs:
 
 ```bash
 kubectl logs -n devops-config-demo deploy/config-demo
 ```
 
-Expected values:
+Kết quả mong đợi:
 
 ```text
 APP_ENV=dev
 LOG_LEVEL=info
 ```
 
-Check environment variables inside the container:
+Xem environment variables trong container:
 
 ```bash
 kubectl exec -n devops-config-demo deploy/config-demo -- env
 ```
 
-You should see:
+Bạn sẽ thấy:
 
 ```text
 APP_ENV=dev
@@ -364,56 +364,56 @@ LOG_LEVEL=info
 API_TOKEN=replace-me-for-real-projects
 ```
 
-## Step 6 - Verify Mounted Storage
+## Bước 6 - Verify Mounted Storage
 
-Read the file written to `/data`:
+Đọc file được ghi vào `/data`:
 
 ```bash
 kubectl exec -n devops-config-demo deploy/config-demo -- cat /data/app.log
 ```
 
-You should see:
+Bạn sẽ thấy:
 
 ```text
 data from pod start
 ```
 
-## Step 7 - Test Pod Recreation
+## Bước 7 - Test Pod Recreation
 
-List Pods:
+Liệt kê Pod:
 
 ```bash
 kubectl get pods -n devops-config-demo
 ```
 
-Delete the Pod:
+Xóa Pod:
 
 ```bash
 kubectl delete pod <pod-name> -n devops-config-demo
 ```
 
-Wait for Kubernetes to recreate it:
+Đợi Kubernetes tạo lại Pod:
 
 ```bash
 kubectl get pods -n devops-config-demo
 ```
 
-Read the file again:
+Đọc lại file:
 
 ```bash
 kubectl exec -n devops-config-demo deploy/config-demo -- cat /data/app.log
 ```
 
-The exact behavior can vary by local cluster storage implementation, but the point is:
+Hành vi cụ thể có thể khác nhau tùy storage implementation của local cluster, nhưng ý chính là:
 
 ```text
-Data that must survive Pod recreation should not live only inside the container filesystem.
-Use a PVC-backed mounted path.
+Data cần sống qua Pod recreation thì không nên chỉ nằm trong filesystem của container.
+Hãy dùng path được mount từ PVC.
 ```
 
-## Step 8 - Cleanup
+## Bước 8 - Cleanup
 
-Delete all resources from this lab:
+Xóa toàn bộ resource của lab:
 
 ```bash
 kubectl delete namespace devops-config-demo
@@ -421,9 +421,9 @@ kubectl delete namespace devops-config-demo
 
 ## Troubleshooting
 
-### Pod is Pending
+### Pod bị Pending
 
-Check:
+Kiểm tra:
 
 ```bash
 kubectl describe pod -n devops-config-demo
@@ -431,17 +431,17 @@ kubectl get pvc -n devops-config-demo
 kubectl get storageclass
 ```
 
-Common causes:
+Nguyên nhân thường gặp:
 
 ```text
-PVC is not Bound
-no default StorageClass
-cluster node is not Ready
+PVC chưa Bound
+không có default StorageClass
+cluster node chưa Ready
 ```
 
-### Environment variables are missing
+### Environment variables bị thiếu
 
-Check:
+Kiểm tra:
 
 ```bash
 kubectl get configmap app-config -n devops-config-demo -o yaml
@@ -449,23 +449,23 @@ kubectl get secret app-secret -n devops-config-demo -o yaml
 kubectl describe deployment config-demo -n devops-config-demo
 ```
 
-Make sure the names match:
+Đảm bảo tên khớp:
 
 ```text
 configMapRef.name = app-config
 secretRef.name    = app-secret
 ```
 
-### /data is missing or not writable
+### /data bị thiếu hoặc không ghi được
 
-Check:
+Kiểm tra:
 
 ```bash
 kubectl describe pod -n devops-config-demo
 kubectl describe pvc app-data -n devops-config-demo
 ```
 
-Make sure the names match:
+Đảm bảo tên khớp:
 
 ```text
 volumeMounts[].name = app-data
@@ -473,23 +473,23 @@ volumes[].name      = app-data
 persistentVolumeClaim.claimName = app-data
 ```
 
-## Takeaway
+## Kết Luận
 
-The most important idea:
-
-```text
-Do not hardcode runtime config, credentials, or persistent data into the image.
-```
-
-Use:
+Ý quan trọng nhất:
 
 ```text
-ConfigMap for non-sensitive config.
-Secret for sensitive config.
-PVC and volumeMounts for persistent data.
+Không hardcode runtime config, credential, hoặc persistent data vào image.
 ```
 
-References:
+Dùng:
+
+```text
+ConfigMap cho config không nhạy cảm.
+Secret cho config nhạy cảm.
+PVC và volumeMounts cho data bền vững.
+```
+
+Tham khảo:
 
 - [Kubernetes ConfigMaps](https://kubernetes.io/docs/concepts/configuration/configmap/)
 - [Kubernetes Secrets](https://kubernetes.io/docs/concepts/configuration/secret/)
