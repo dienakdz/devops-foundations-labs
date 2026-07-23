@@ -61,7 +61,7 @@ curl http://localhost:8002
 Expected response:
 
 ```json
-{"message":"Hello from Docker","session":"02-containerization-basics"}
+{"message":"Hello from Docker, My name is Minh Dien and I am learning DevOps","session":"02-containerization-basics"}
 ```
 
 Stop the container with `Ctrl+C`.
