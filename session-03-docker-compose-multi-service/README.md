@@ -41,6 +41,16 @@ curl http://localhost:8001
 
 The `visit_count` value should increase on each request.
 
+Restart the stack and verify that the count is still present:
+
+```bash
+docker compose down
+docker compose up -d
+curl http://localhost:8001
+```
+
+The named `redis-data` volume survives `docker compose down`.
+
 Stop and remove containers and the default network:
 
 ```bash
@@ -52,6 +62,8 @@ Remove volumes too, if the project has volumes:
 ```bash
 docker compose down -v
 ```
+
+After `down -v`, the next stack starts with a new Redis data volume and the counter resets.
 
 ## Useful Commands
 
@@ -105,6 +117,13 @@ healthcheck:
 ```
 
 Compose checks Redis with `redis-cli ping`. When Redis is ready, it returns `PONG`.
+
+```yaml
+volumes:
+  - redis-data:/data
+```
+
+Redis writes data to a named Docker volume. Container deletion does not delete the volume; `docker compose down -v` does.
 
 ## Where visit_count Is Stored
 
@@ -167,6 +186,25 @@ Use Docker Compose when:
 - You want teammates to start the same local stack with one command.
 
 Do not treat Compose as Kubernetes. Compose is great for local/simple setups. Kubernetes is designed for production orchestration at a larger scale.
+
+## Failure Exercise
+
+With the stack running, stop only Redis:
+
+```bash
+docker compose stop redis
+curl http://localhost:8001
+```
+
+The API request fails because its dependency is unavailable. Start Redis again:
+
+```bash
+docker compose start redis
+docker compose ps
+curl http://localhost:8001
+```
+
+This shows why startup ordering is not enough: dependencies can fail after startup, so production applications also need clear errors, timeouts, retries, and monitoring.
 
 ## Takeaway
 

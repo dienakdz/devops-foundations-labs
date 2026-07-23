@@ -41,6 +41,16 @@ curl http://localhost:8001
 
 Giá trị `visit_count` sẽ tăng sau mỗi request.
 
+Restart stack rồi kiểm tra count vẫn còn:
+
+```bash
+docker compose down
+docker compose up -d
+curl http://localhost:8001
+```
+
+Named volume `redis-data` vẫn tồn tại sau `docker compose down`.
+
 Dừng và xóa container cùng default network:
 
 ```bash
@@ -52,6 +62,8 @@ Nếu project có volume và muốn xóa luôn volume:
 ```bash
 docker compose down -v
 ```
+
+Sau `down -v`, lần start tiếp theo tạo Redis data volume mới và counter reset.
 
 ## Lệnh Hữu Ích
 
@@ -105,6 +117,13 @@ healthcheck:
 ```
 
 Compose kiểm tra Redis bằng lệnh `redis-cli ping`. Khi Redis sẵn sàng, nó trả về `PONG`.
+
+```yaml
+volumes:
+  - redis-data:/data
+```
+
+Redis ghi data vào named Docker volume. Xóa container không xóa volume; `docker compose down -v` mới xóa.
 
 ## visit_count Được Lưu Ở Đâu?
 
@@ -167,6 +186,25 @@ Dùng Docker Compose khi:
 - Muốn đồng đội start cùng một local stack bằng một lệnh.
 
 Không nên xem Compose là Kubernetes. Compose phù hợp cho local/simple setup. Kubernetes được thiết kế cho production orchestration ở quy mô lớn hơn.
+
+## Bài Tập Quan Sát Lỗi
+
+Khi stack đang chạy, chỉ stop Redis:
+
+```bash
+docker compose stop redis
+curl http://localhost:8001
+```
+
+API request lỗi vì dependency không còn hoạt động. Start Redis lại:
+
+```bash
+docker compose start redis
+docker compose ps
+curl http://localhost:8001
+```
+
+Điều này cho thấy startup ordering chưa đủ: dependency có thể lỗi sau startup, nên production app còn cần error rõ ràng, timeout, retry và monitoring.
 
 ## Kết Luận
 
