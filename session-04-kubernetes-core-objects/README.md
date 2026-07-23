@@ -25,6 +25,10 @@ Kubernetes does not replace Docker images. Kubernetes runs containers from image
 - How labels and selectors connect Deployments and Services.
 - How to access a ClusterIP Service locally with `kubectl port-forward`.
 - How Kubernetes self-healing works when a Pod is deleted.
+- How readiness and liveness probes differ.
+- How CPU and memory requests/limits protect cluster capacity.
+- How to load a local Docker image into kind.
+- How to inspect and roll back a Deployment rollout.
 
 ## Big Picture
 
@@ -99,6 +103,7 @@ flowchart TD
 ```text
 namespace.yaml
 deployment.yaml
+deployment-local-image.yaml
 service.yaml
 ingress-example.yaml
 ```
@@ -166,6 +171,25 @@ app=demo-api
 ```
 
 The selector must match the Pod labels from the Deployment. If the selector does not match, the Service exists but has no Pods to route traffic to.
+
+### deployment-local-image.yaml
+
+This manifest keeps the same Deployment and labels, but changes the container image to the image built in Session 02:
+
+```yaml
+image: devops-demo-api:session-02
+imagePullPolicy: IfNotPresent
+```
+
+kind nodes are separate Docker containers. An image in the WSL Docker Engine is therefore not automatically present inside the kind node. The lab loads it explicitly with `kind load docker-image`.
+
+Both Deployment manifests also include:
+
+```text
+readinessProbe = decide whether a Pod can receive Service traffic
+livenessProbe  = decide whether Kubernetes should restart the container
+resources      = reserve and limit CPU/memory
+```
 
 ### ingress-example.yaml
 
@@ -454,7 +478,81 @@ You declare the number of replicas.
 Kubernetes moves the system toward that number.
 ```
 
-## Step 8 - Cleanup
+## Step 8 - Deploy The Session 02 Image To kind
+
+Build the image from Session 02:
+
+```bash
+cd /mnt/d/DevOps/Ops/session-02-containerization-basics
+docker build -t devops-demo-api:session-02 .
+```
+
+Load it into the named kind cluster:
+
+```bash
+kind load docker-image devops-demo-api:session-02 --name devops-lab
+```
+
+Apply the second Deployment manifest:
+
+```bash
+cd /mnt/d/DevOps/Ops/session-04-kubernetes-core-objects
+kubectl apply -f deployment-local-image.yaml
+kubectl rollout status deployment/demo-api -n devops-demo
+```
+
+Keep the existing port-forward running and test again:
+
+```bash
+curl http://localhost:8080
+```
+
+The response now comes from the FastAPI image built in Session 02:
+
+```text
+source code -> Docker image -> kind node -> Deployment -> Pod -> Service
+```
+
+If the Pod shows `ImagePullBackOff`, load the image again and inspect the Pod:
+
+```bash
+kind load docker-image devops-demo-api:session-02 --name devops-lab
+kubectl describe pod -n devops-demo
+```
+
+## Step 9 - Inspect And Roll Back A Rollout
+
+```bash
+kubectl rollout history deployment/demo-api -n devops-demo
+kubectl rollout undo deployment/demo-api -n devops-demo
+kubectl rollout status deployment/demo-api -n devops-demo
+curl http://localhost:8080
+```
+
+The rollback returns to the previous public image. Apply the local image again when you want to continue:
+
+```bash
+kubectl apply -f deployment-local-image.yaml
+kubectl rollout status deployment/demo-api -n devops-demo
+```
+
+## Step 10 - Inspect Probes And Resource Rules
+
+```bash
+kubectl describe deployment demo-api -n devops-demo
+kubectl get pods -n devops-demo
+```
+
+Read the `Requests`, `Limits`, `Liveness`, `Readiness`, and `Conditions` sections:
+
+```text
+readiness fails -> Pod stays running but receives no Service traffic
+liveness fails  -> kubelet restarts the container
+requests        -> scheduler reserves capacity
+limits          -> container cannot exceed the configured boundary
+```
+
+## Step 11 - Cleanup
 
 Delete all lab resources:
 

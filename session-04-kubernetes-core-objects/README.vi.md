@@ -25,6 +25,10 @@ Kubernetes không thay thế Docker image. Kubernetes chạy container từ imag
 - Labels và selectors nối Deployment với Service ra sao.
 - Cách truy cập ClusterIP Service ở local bằng `kubectl port-forward`.
 - Self-healing hoạt động thế nào khi một Pod bị xóa.
+- Readiness probe và liveness probe khác nhau thế nào.
+- CPU/RAM requests và limits bảo vệ tài nguyên cluster ra sao.
+- Cách load local Docker image vào kind.
+- Cách xem và rollback một Deployment rollout.
 
 ## Bức Tranh Tổng Quan
 
@@ -99,6 +103,7 @@ flowchart TD
 ```text
 namespace.yaml
 deployment.yaml
+deployment-local-image.yaml
 service.yaml
 ingress-example.yaml
 ```
@@ -166,6 +171,25 @@ app=demo-api
 ```
 
 Selector phải khớp với label của Pod trong Deployment. Nếu selector không khớp, Service vẫn tồn tại nhưng không có Pod nào để route traffic.
+
+### deployment-local-image.yaml
+
+Manifest này vẫn dùng cùng Deployment và labels, nhưng đổi container image sang image đã build ở Session 02:
+
+```yaml
+image: devops-demo-api:session-02
+imagePullPolicy: IfNotPresent
+```
+
+Node của kind là Docker container riêng. Vì vậy image đang có trong Docker Engine của WSL chưa tự động xuất hiện bên trong kind node. Bài lab sẽ load image bằng `kind load docker-image`.
+
+Cả hai Deployment manifest còn có:
+
+```text
+readinessProbe = quyết định Pod đã được nhận traffic từ Service chưa
+livenessProbe  = quyết định Kubernetes có cần restart container không
+resources      = đặt mức CPU/RAM được giữ chỗ và giới hạn
+```
 
 ### ingress-example.yaml
 
@@ -454,7 +478,81 @@ Bạn khai báo số replica mong muốn.
 Kubernetes đưa hệ thống về đúng số đó.
 ```
 
-## Bước 8 - Cleanup
+## Bước 8 - Deploy Image Của Session 02 Lên kind
+
+Build image ở Session 02:
+
+```bash
+cd /mnt/d/DevOps/Ops/session-02-containerization-basics
+docker build -t devops-demo-api:session-02 .
+```
+
+Load image vào đúng kind cluster:
+
+```bash
+kind load docker-image devops-demo-api:session-02 --name devops-lab
+```
+
+Apply Deployment manifest thứ hai:
+
+```bash
+cd /mnt/d/DevOps/Ops/session-04-kubernetes-core-objects
+kubectl apply -f deployment-local-image.yaml
+kubectl rollout status deployment/demo-api -n devops-demo
+```
+
+Giữ lệnh port-forward đang chạy rồi gọi lại API:
+
+```bash
+curl http://localhost:8080
+```
+
+Kết quả bây giờ đến từ FastAPI image của Session 02:
+
+```text
+source code -> Docker image -> kind node -> Deployment -> Pod -> Service
+```
+
+Nếu Pod bị `ImagePullBackOff`, load lại image và kiểm tra Pod:
+
+```bash
+kind load docker-image devops-demo-api:session-02 --name devops-lab
+kubectl describe pod -n devops-demo
+```
+
+## Bước 9 - Xem Và Rollback Một Rollout
+
+```bash
+kubectl rollout history deployment/demo-api -n devops-demo
+kubectl rollout undo deployment/demo-api -n devops-demo
+kubectl rollout status deployment/demo-api -n devops-demo
+curl http://localhost:8080
+```
+
+Rollback đưa app về public image trước đó. Khi muốn tiếp tục với local image, apply lại:
+
+```bash
+kubectl apply -f deployment-local-image.yaml
+kubectl rollout status deployment/demo-api -n devops-demo
+```
+
+## Bước 10 - Kiểm Tra Probes Và Resource Rules
+
+```bash
+kubectl describe deployment demo-api -n devops-demo
+kubectl get pods -n devops-demo
+```
+
+Đọc các phần `Requests`, `Limits`, `Liveness`, `Readiness` và `Conditions`:
+
+```text
+readiness fail -> Pod vẫn chạy nhưng không nhận traffic từ Service
+liveness fail  -> kubelet restart container
+requests       -> scheduler giữ chỗ tài nguyên
+limits         -> container không được vượt quá giới hạn đã đặt
+```
+
+## Bước 11 - Cleanup
 
 Xóa toàn bộ resource của lab:
 

@@ -9,5 +9,4 @@ spec:
     app: demo-api
   ports:
     - port: 80
-      targetPort: 80
-
+      targetPort: http
