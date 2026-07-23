@@ -64,6 +64,48 @@ imageTag: "1.0.1"
 
 In a real project, this type of change would be committed, reviewed, merged, and then applied by a pipeline or GitOps tool.
 
+### Practice The Git Change Flow
+
+From the repository root:
+
+```bash
+git switch -c practice/session-01-config-change
+```
+
+Edit `app-config.yaml`, then inspect exactly what changed:
+
+```bash
+git status
+git diff -- session-01-devops-gitops/app-config.yaml
+```
+
+Record the desired-state change:
+
+```bash
+git add session-01-devops-gitops/app-config.yaml
+git commit -m "practice: scale demo app to three replicas"
+git show --stat --oneline HEAD
+```
+
+In a team, this branch would be pushed and reviewed in a pull request. Practice an auditable rollback by creating a new commit that reverses the change:
+
+```bash
+git revert --no-edit HEAD
+git log --oneline -3
+```
+
+`git revert` keeps both the original change and the rollback in history. That is safer for shared branches than rewriting history.
+
+## CI/CD Versus GitOps
+
+```text
+CI checks whether source changes are valid.
+CD builds, publishes, or deploys an artifact.
+GitOps continuously reconciles a target system with desired state stored in Git.
+```
+
+A GitHub Actions workflow that runs `kubectl apply` is CI/CD automation, but it is not automatically full GitOps. A GitOps controller such as Argo CD or Flux normally runs near the cluster and continuously detects drift.
+
 ## Check Yourself
 
 - What is the desired state in `app-config.yaml`?

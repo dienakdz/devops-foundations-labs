@@ -64,6 +64,48 @@ imageTag: "1.0.1"
 
 Trong dự án thật, thay đổi kiểu này sẽ được commit, review, merge, rồi pipeline hoặc GitOps tool apply.
 
+### Thực Hành Luồng Thay Đổi Git
+
+Từ repository root:
+
+```bash
+git switch -c practice/session-01-config-change
+```
+
+Sửa `app-config.yaml`, rồi xem chính xác phần đã đổi:
+
+```bash
+git status
+git diff -- session-01-devops-gitops/app-config.yaml
+```
+
+Ghi desired-state change vào lịch sử:
+
+```bash
+git add session-01-devops-gitops/app-config.yaml
+git commit -m "practice: scale demo app to three replicas"
+git show --stat --oneline HEAD
+```
+
+Trong team, branch này sẽ được push và review qua pull request. Thực hành rollback có lịch sử rõ ràng bằng một commit mới đảo ngược thay đổi:
+
+```bash
+git revert --no-edit HEAD
+git log --oneline -3
+```
+
+`git revert` giữ cả thay đổi gốc và lần rollback trong history. Cách này an toàn hơn rewrite history trên shared branch.
+
+## CI/CD Khác GitOps
+
+```text
+CI kiểm tra source change có hợp lệ không.
+CD build, publish hoặc deploy artifact.
+GitOps liên tục đưa target system về desired state lưu trong Git.
+```
+
+Một GitHub Actions workflow chạy `kubectl apply` là CI/CD automation, nhưng chưa tự động là full GitOps. GitOps controller như Argo CD hoặc Flux thường chạy gần cluster và liên tục phát hiện drift.
+
 ## Tự Kiểm Tra
 
 - Trạng thái mong muốn trong `app-config.yaml` là gì?
