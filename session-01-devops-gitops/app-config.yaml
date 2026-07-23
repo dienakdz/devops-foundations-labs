@@ -1,7 +1,7 @@
 app:
   name: demo-api
   environment: dev
-  replicas: 2
+  replicas: 3
   image: demo-api
   imageTag: "1.0.0"
   port: 8000
