@@ -50,7 +50,7 @@ README.md     hướng dẫn tiếng Anh
 README.vi.md  hướng dẫn tiếng Việt, nếu đã dịch
 ```
 
-Hiện tại session 1, 2, 3 đã có README song ngữ.
+Hiện tại session 1, 2, 3, 4 đã có README song ngữ.
 
 ## Thứ Tự Học Khuyến Nghị
 
