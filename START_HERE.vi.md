@@ -97,7 +97,7 @@ session-07-aws-devops-pipeline
 Bạn cần hiểu:
 
 ```text
-Pipeline có thể test code, build Docker image, push image lên ECR, rồi deploy.
+Pipeline có thể test code, build Docker image và publish immutable artifact lên ECR. Session 08 dùng artifact đó cho deployment.
 ```
 
 ### Câu Hỏi 7: Tất cả ghép lại ra sao?
@@ -111,8 +111,9 @@ session-08-final-project
 Bạn cần hiểu:
 
 ```text
-Source -> Docker image -> ECR -> Kubernetes/ECS/EKS -> pipeline
-AWS infrastructure -> Terraform
+Local: source -> image -> Compose -> kind Kubernetes
+AWS: source -> CI test -> ECR image artifact
+Infrastructure và pipeline identity -> Terraform
 ```
 
 ## 2. Thứ Tự Học Khuyến Nghị
@@ -120,26 +121,23 @@ AWS infrastructure -> Terraform
 Học theo thứ tự:
 
 ```text
-1. README.md tổng quan
-2. START_HERE.md
+1. README.md và START_HERE.md
+2. session-01 đọc lần đầu
 3. session-02
 4. session-03
-5. session-06 local-no-cost
-6. session-04
-7. session-05
-8. session-06 aws-s3-demo
-9. session-07
-10. session-08
-11. quay lại session-01 để hiểu GitOps sau khi đã thấy các tool
+5. session-04
+6. session-05
+7. session-06 local-no-cost, rồi aws-s3-demo
+8. session-07 CI, rồi ECR
+9. session-08 local track, rồi optional AWS artifact track
+10. quay lại session-01 với toàn bộ flow trong đầu
 ```
 
 Lý do nên quay lại session 01 sau: GitOps là mô hình vận hành. Nó dễ hiểu hơn sau khi bạn đã thấy Docker, Compose, Kubernetes, Terraform, và CI/CD chạy thực tế.
 
 Nếu dùng WSL, đọc thêm:
 
-```text
-WSL_SETUP.md
-```
+[Đọc hướng dẫn cài đặt WSL](WSL_SETUP.vi.md).
 
 ## 3. Câu Ghi Nhớ
 
@@ -149,7 +147,7 @@ Compose chạy nhiều service local.
 Kubernetes vận hành container trên cluster.
 ConfigMap/Secret/PVC đưa config và data vào app.
 Terraform tạo hạ tầng cloud.
-Pipeline tự động build và deploy.
+Pipeline tự động các stage build, test và publish artifact lặp lại.
 GitOps giữ trạng thái mong muốn trong Git.
 ```
 
@@ -207,4 +205,6 @@ Bạn có thể xem là đã nắm nền tảng khi tự làm được:
 - Tạo một AWS resource nhỏ bằng Terraform.
 - Destroy resource đó bằng Terraform.
 - Giải thích pipeline build image và push lên ECR như thế nào.
+- Giải thích GitHub OIDC tránh AWS access key dài hạn như thế nào.
+- Verify Kubernetes rollout và persistent data sau Pod recreation.
 - Giải thích vì sao Terraform không tự xóa được resource tạo tay trong AWS Console.

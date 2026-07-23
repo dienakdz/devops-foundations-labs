@@ -26,8 +26,8 @@ source code
 | 04 | Kubernetes Core Objects | Làm sao chạy container trên cluster? |
 | 05 | K8s Config & Storage | Làm sao quản lý config, secret, và data bền vững? |
 | 06 | Terraform IaC Basics | Làm sao tạo và xóa hạ tầng AWS bằng code? |
-| 07 | AWS DevOps Pipeline | Làm sao tự động test, build, push, và deploy? |
-| 08 | Final Project | Làm sao ghép toàn bộ thành một luồng deploy? |
+| 07 | AWS DevOps Pipeline | Làm sao test image và publish an toàn lên ECR? |
+| 08 | Final Project | Làm sao ghép local deployment và AWS artifact pipeline? |
 
 ## Cấu Trúc Repository
 
@@ -47,10 +47,10 @@ Mỗi session dùng convention:
 
 ```text
 README.md     hướng dẫn tiếng Anh
-README.vi.md  hướng dẫn tiếng Việt, nếu đã dịch
+README.vi.md  hướng dẫn tiếng Việt UTF-8
 ```
 
-Hiện tại session 1, 2, 3, 4, 5 đã có README song ngữ.
+Cả tám session đều có README song ngữ.
 
 ## Thứ Tự Học Khuyến Nghị
 
@@ -63,15 +63,15 @@ START_HERE.md
 Thứ tự nên học:
 
 ```text
-1. session-02: Docker basics
-2. session-03: Docker Compose
-3. session-06/local-no-cost: Terraform không tốn chi phí AWS
-4. session-04: Kubernetes core objects
-5. session-05: Kubernetes config and storage
-6. session-06/aws-s3-demo: Terraform với AWS
-7. session-07: AWS pipeline
-8. session-08: final project
-9. session-01: quay lại GitOps sau khi đã thấy các tool
+1. session-01: đọc lần đầu về DevOps và thực hành Git change flow
+2. session-02: Docker basics
+3. session-03: Docker Compose và persistent volume
+4. session-04: Kubernetes core objects trên kind
+5. session-05: Kubernetes config và storage
+6. session-06: Terraform local state, rồi AWS S3 lab
+7. session-07: AWS-free CI, rồi manual ECR pipeline
+8. session-08: final local stack và AWS artifact pipeline
+9. session-01: quay lại GitOps sau khi đã thấy toàn bộ toolchain
 ```
 
 Session 01 rất quan trọng về tư duy, nhưng sẽ dễ hiểu hơn sau khi bạn đã thực hành Docker, Compose, Kubernetes, Terraform, và CI/CD.
@@ -86,7 +86,7 @@ Session 01 rất quan trọng về tư duy, nhưng sẽ dễ hiểu hơn sau khi
 | Container orchestration | Kubernetes | Chạy, scale, restart, update container |
 | Runtime config | ConfigMap, Secret, PVC | Truyền config, credential, và data bền vững |
 | Cloud infrastructure | Terraform | Tạo, sửa, xóa AWS resource bằng code |
-| Automation | CI/CD pipeline | Test, build, push image, deploy tự động |
+| Automation | CI/CD pipeline | Test, build và publish immutable image artifact |
 
 ## Công Cụ Cần Có
 
@@ -103,9 +103,7 @@ Cài dần theo từng session:
 
 Nếu dùng WSL thay vì Docker Desktop, đọc:
 
-```text
-WSL_SETUP.md
-```
+[Đọc hướng dẫn cài đặt WSL](WSL_SETUP.vi.md).
 
 ## Quy Tắc Tránh Tốn Tiền AWS
 

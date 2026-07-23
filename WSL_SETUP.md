@@ -1,152 +1,150 @@
-# WSL Setup For This DevOps Workspace
+# WSL Setup
 
-May hien tai:
+Vietnamese version: [WSL_SETUP.vi.md](WSL_SETUP.vi.md)
 
-```text
-WSL distro: Ubuntu 24.04 LTS
-WSL version: 2
-Docker Engine: installed and running in WSL
-Docker Compose: installed in WSL
-Missing in WSL: terraform, kubectl, aws
-```
+This repository is designed to run from Ubuntu on WSL2 without Docker Desktop.
 
-## Nen Lam Viec O Dau?
+## Working Directory
 
-Dung WSL terminal cho cac lab DevOps:
+Open WSL and use the Linux path for the Windows workspace:
 
 ```bash
 cd /mnt/d/DevOps/Ops
 ```
 
-Ly do:
-
-```text
-Docker Engine dang chay trong WSL.
-Docker/Kubernetes/Terraform ecosystem hop voi Linux shell hon PowerShell.
-Lenh trong course/AWS docs thuong viet cho Linux.
-```
-
-PowerShell van dung duoc de mo file, nhung nen chay lab bang WSL.
-
-## Buoc 1: Kiem Tra Tool
-
-Trong WSL:
+Run the tool check at any time:
 
 ```bash
-cd /mnt/d/DevOps/Ops
 bash scripts/check-tools-wsl.sh
 ```
 
-## Buoc 2: Chay Session 02 Truoc
+The script checks Git, Docker, Docker Compose, kind, kubectl, Terraform, AWS CLI, and the current Kubernetes context.
 
-Vi Docker da co, bat dau bang:
+## Tool Order
 
-```bash
-cd /mnt/d/DevOps/Ops/session-02-containerization-basics
-docker build -t devops-demo-api:session-02 .
-docker run --rm -p 8000:8000 devops-demo-api:session-02
+Install tools when the matching session needs them:
+
+```text
+Sessions 01-03: Git, Docker Engine, Docker Compose
+Sessions 04-05: kubectl, kind
+Session 06:     Terraform, then AWS CLI for the AWS lab
+Sessions 07-08: GitHub repository and AWS CLI/Terraform for ECR
 ```
 
-Mo terminal WSL khac:
+## Docker Engine And Compose
+
+This workspace assumes Docker Engine is already running inside WSL:
 
 ```bash
-curl http://localhost:8000
+docker version
+docker compose version
 ```
 
-Neu thay JSON tra ve la dung.
-
-## Buoc 3: Chay Session 03
+If the CLI exists but the daemon is unreachable:
 
 ```bash
-cd /mnt/d/DevOps/Ops/session-03-docker-compose-multi-service
-docker compose up --build
+sudo service docker start
 ```
 
-Mo terminal WSL khac:
+## kubectl
 
-```bash
-curl http://localhost:8001
-```
-
-Dung:
-
-```bash
-docker compose down
-```
-
-## Buoc 4: Cai Terraform Trong WSL
-
-Chay trong WSL:
-
-```bash
-sudo apt-get update
-sudo apt-get install -y gnupg software-properties-common
-wget -O- https://apt.releases.hashicorp.com/gpg | \
-  gpg --dearmor | \
-  sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
-echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(. /etc/os-release && echo "$VERSION_CODENAME") main" | \
-  sudo tee /etc/apt/sources.list.d/hashicorp.list
-sudo apt-get update
-sudo apt-get install -y terraform
-terraform version
-```
-
-Sau do hoc:
-
-```bash
-cd /mnt/d/DevOps/Ops/session-06-terraform-iac-basics/local-no-cost
-terraform init
-terraform plan
-terraform apply
-terraform destroy
-```
-
-## Buoc 5: Cai kubectl Trong WSL
-
-Chay trong WSL:
+Install the current stable Linux AMD64 client:
 
 ```bash
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 rm kubectl
-kubectl version --client=true
+kubectl version --client
 ```
 
-Luu y: `kubectl` chi la CLI. Muon co Kubernetes cluster local thi can them `kind`, `minikube`, hoac cluster EKS tren AWS.
+`kubectl` is only a client. It needs a Kubernetes cluster context.
 
-## Buoc 6: Cai AWS CLI Trong WSL
+## kind
 
-Windows da co AWS CLI, nhung WSL chua co. Neu chay Terraform/AWS command trong WSL thi nen cai AWS CLI trong WSL luon:
+Install the stable kind binary used by the Session 04 guide:
+
+```bash
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.32.0/kind-linux-amd64
+chmod +x ./kind
+sudo mv ./kind /usr/local/bin/kind
+kind version
+```
+
+Create the lab cluster only when starting Session 04:
+
+```bash
+kind create cluster --name devops-lab --wait 120s
+kubectl get nodes
+```
+
+Delete it after all local Kubernetes sessions if you no longer need it:
+
+```bash
+kind delete cluster --name devops-lab
+```
+
+## Terraform
+
+Use the official HashiCorp APT repository:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y unzip curl
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+sudo apt-get install -y gpg wget
+wget -O - https://apt.releases.hashicorp.com/gpg \
+  | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" \
+  | sudo tee /etc/apt/sources.list.d/hashicorp.list
+sudo apt-get update
+sudo apt-get install -y terraform
+terraform version
+```
+
+Start with the no-cost local lab before AWS:
+
+```bash
+cd /mnt/d/DevOps/Ops/session-06-terraform-iac-basics/local-no-cost
+```
+
+## AWS CLI
+
+Install AWS CLI v2 inside WSL if Terraform and AWS commands will run there:
+
+```bash
+setup_dir=$(mktemp -d)
+cd "$setup_dir"
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip
 unzip awscliv2.zip
 sudo ./aws/install
-rm -rf aws awscliv2.zip
+cd /mnt/d/DevOps/Ops
 aws --version
 ```
 
-Dang nhap/cau hinh:
+Configure only a dedicated learning account, then verify it before every AWS lab:
 
 ```bash
 aws configure
 aws sts get-caller-identity
+aws configure get region
 ```
 
-## Thu Tu Tiep Theo
+## Recommended Progression
 
 ```text
-1. Chay session-02 thanh cong
-2. Chay session-03 thanh cong
-3. Cai Terraform
-4. Chay session-06/local-no-cost
-5. Cai kubectl
-6. Hoc session-04 va session-05 khi co local Kubernetes cluster
-7. Cai AWS CLI trong WSL
-8. Moi dung session-06/aws-s3-demo
+01 Git and DevOps change flow
+02 Docker image/container
+03 Compose API + Redis
+04 kind Kubernetes core objects
+05 Kubernetes config and storage
+06 Terraform local state, then AWS S3
+07 GitHub CI, then ECR/OIDC
+08 final local stack, then optional AWS artifact track
 ```
 
-Khong nen nhay vao AWS truoc khi lam duoc session-02, session-03 va Terraform local no-cost.
+Do not create AWS resources until you can read `terraform plan`, preserve state, run `terraform destroy`, and verify cleanup.
 
+## References
+
+- [Install kubectl on Linux](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
+- [kind Quick Start](https://kind.sigs.k8s.io/docs/user/quick-start/)
+- [Install Terraform](https://developer.hashicorp.com/terraform/install)
+- [Install AWS CLI v2 on Linux](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)

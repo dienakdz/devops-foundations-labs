@@ -97,7 +97,7 @@ session-07-aws-devops-pipeline
 You should understand:
 
 ```text
-A pipeline can test code, build a Docker image, push it to ECR, and deploy it.
+A pipeline can test code, build a Docker image, and publish an immutable artifact to ECR. Deployment consumes that artifact in Session 08.
 ```
 
 ### Question 7: How do all pieces fit together?
@@ -111,8 +111,9 @@ session-08-final-project
 You should understand:
 
 ```text
-Source -> Docker image -> ECR -> Kubernetes/ECS/EKS -> pipeline
-AWS infrastructure -> Terraform
+Local: source -> image -> Compose -> kind Kubernetes
+AWS: source -> CI test -> ECR image artifact
+Infrastructure and pipeline identity -> Terraform
 ```
 
 ## 2. Recommended Order
@@ -120,26 +121,23 @@ AWS infrastructure -> Terraform
 Use this order:
 
 ```text
-1. README.md overview
-2. START_HERE.md
+1. README.md and START_HERE.md
+2. session-01 first pass
 3. session-02
 4. session-03
-5. session-06 local-no-cost
-6. session-04
-7. session-05
-8. session-06 aws-s3-demo
-9. session-07
-10. session-08
-11. revisit session-01 to understand GitOps after seeing the tools
+5. session-04
+6. session-05
+7. session-06 local-no-cost, then aws-s3-demo
+8. session-07 CI, then ECR
+9. session-08 local track, then optional AWS artifact track
+10. revisit session-01 with the complete flow in mind
 ```
 
 Why revisit session 01 later: GitOps is an operating model. It is easier to understand after you have seen Docker, Compose, Kubernetes, Terraform, and CI/CD in action.
 
 If you use WSL, also read:
 
-```text
-WSL_SETUP.md
-```
+[Read the WSL setup guide](WSL_SETUP.md).
 
 ## 3. Memory Hook
 
@@ -149,7 +147,7 @@ Compose runs multiple local services.
 Kubernetes operates containers on a cluster.
 ConfigMap/Secret/PVC provide config and data to apps.
 Terraform creates cloud infrastructure.
-Pipeline automates build and deployment.
+Pipeline automates repeatable build, test, and artifact publishing stages.
 GitOps keeps desired state in Git.
 ```
 
@@ -207,4 +205,6 @@ You can consider the foundation solid when you can:
 - Create a small AWS resource with Terraform.
 - Destroy that resource with Terraform.
 - Explain how a pipeline builds an image and pushes it to ECR.
+- Explain how GitHub OIDC avoids long-lived AWS access keys.
+- Verify a Kubernetes rollout and persistent data after Pod recreation.
 - Explain why Terraform cannot automatically delete resources created manually in AWS Console.

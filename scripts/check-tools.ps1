@@ -1,4 +1,4 @@
-$tools = @("git", "docker", "kubectl", "terraform", "aws")
+$tools = @("git", "docker", "kind", "kubectl", "terraform", "aws")
 
 foreach ($tool in $tools) {
     $cmd = Get-Command $tool -ErrorAction SilentlyContinue
@@ -11,5 +11,4 @@ foreach ($tool in $tools) {
 }
 
 Write-Host ""
-Write-Host "Neu thieu tool, cai theo thu tu: Git -> Docker Desktop -> kubectl -> Terraform -> AWS CLI."
-
+Write-Host "Install tools as each session needs them; see WSL_SETUP.md or WSL_SETUP.vi.md."

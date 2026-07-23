@@ -2,6 +2,8 @@
 *.tfstate
 *.tfstate.*
 terraform.tfvars
+*.tfplan
+tfplan
 generated-note.txt
 __pycache__/
 *.pyc

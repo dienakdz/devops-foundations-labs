@@ -26,8 +26,8 @@ source code
 | 04 | Kubernetes Core Objects | How do we run containers on a cluster? |
 | 05 | K8s Config & Storage | How do we manage config, secrets, and persistent data? |
 | 06 | Terraform IaC Basics | How do we create and destroy AWS infrastructure with code? |
-| 07 | AWS DevOps Pipeline | How do we automate test, build, push, and deploy? |
-| 08 | Final Project | How do all pieces fit into one deployment flow? |
+| 07 | AWS DevOps Pipeline | How do we test an image and publish it safely to ECR? |
+| 08 | Final Project | How do all pieces fit into local deployment and an AWS artifact pipeline? |
 
 ## Repository Structure
 
@@ -47,10 +47,10 @@ Each session has:
 
 ```text
 README.md     English guide
-README.vi.md  Vietnamese guide, when translated
+README.vi.md  Vietnamese UTF-8 guide
 ```
 
-Sessions 1, 2, 3, 4, and 5 currently have bilingual README files.
+All eight sessions have bilingual README files.
 
 ## Recommended Learning Order
 
@@ -63,15 +63,15 @@ START_HERE.md
 Recommended order:
 
 ```text
-1. session-02: Docker basics
-2. session-03: Docker Compose
-3. session-06/local-no-cost: Terraform without AWS cost
-4. session-04: Kubernetes core objects
+1. session-01: first pass through DevOps and Git change flow
+2. session-02: Docker basics
+3. session-03: Docker Compose and persistent volumes
+4. session-04: Kubernetes core objects on kind
 5. session-05: Kubernetes config and storage
-6. session-06/aws-s3-demo: Terraform with AWS
-7. session-07: AWS pipeline
-8. session-08: final project
-9. session-01: revisit GitOps after seeing the tools
+6. session-06: Terraform local state, then the AWS S3 lab
+7. session-07: AWS-free CI, then the manual ECR pipeline
+8. session-08: final local stack and AWS artifact pipeline
+9. session-01: revisit GitOps after seeing the complete toolchain
 ```
 
 Session 01 is conceptually important, but it is easier to understand after you have seen Docker, Compose, Kubernetes, Terraform, and CI/CD in practice.
@@ -86,7 +86,7 @@ Session 01 is conceptually important, but it is easier to understand after you h
 | Container orchestration | Kubernetes | Run, scale, restart, and update containers |
 | Runtime config | ConfigMap, Secret, PVC | Provide config, credentials, and persistent data |
 | Cloud infrastructure | Terraform | Create, update, and destroy AWS resources with code |
-| Automation | CI/CD pipeline | Test, build, push image, and deploy automatically |
+| Automation | CI/CD pipeline | Test, build, and publish immutable image artifacts |
 
 ## Prerequisites
 
@@ -103,9 +103,7 @@ Install the tools gradually as you reach each session:
 
 If you use WSL instead of Docker Desktop, read:
 
-```text
-WSL_SETUP.md
-```
+[Read the WSL setup guide](WSL_SETUP.md).
 
 ## AWS Cost Safety Rules
 
